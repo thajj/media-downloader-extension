@@ -1,22 +1,17 @@
-# Media Downloader Extension
-
-A Chrome extension that helps you download videos and images from web pages. The extension automatically detects media files and provides an easy-to-use interface for downloading them individually or in bulk.
-
-## Features
-
-- Automatically detects videos (.mp4, .webm) and images (.jpg, .jpeg, .png, .gif)
-- Floating side panel with tabbed interface for videos and images
-- Download individual files or all media at once
-- Visual feedback for download status
-- Automatic retry mechanism for failed downloads
-- Separate handling for video and image downloads to optimize performance
 
 ## Installation
 
-1. Clone this repository or download the ZIP file
+### For Development
+
+1. Run `npm run build` to create the `dist` folder
 2. Open Chrome and go to `chrome://extensions/`
 3. Enable "Developer mode" in the top right
-4. Click "Load unpacked" and select the extension directory
+4. Click "Load unpacked" and select the `dist` directory
+
+### For Users
+
+1. Download the latest release from the Chrome Web Store (coming soon)
+2. Or download the latest build from the releases page
 
 ## Usage
 
@@ -31,15 +26,50 @@ A Chrome extension that helps you download videos and images from web pages. The
 
 ## Technical Details
 
-- Uses Chrome Extension Manifest V3
+- Built with Chrome Extension Manifest V3
+- Modern JavaScript (ES6+) transpiled with Babel
+- Webpack for module bundling and asset management
+- Object-oriented architecture with separate concerns:
+  - `MediaDetector`: Handles media file detection
+  - `SidePanel`: Manages UI interactions
+  - `Utils`: Common utility functions
 - Implements MutationObserver for dynamic content detection
 - Features retry mechanism for failed downloads
-- Optimized download queuing with different delays for videos and images
+- Optimized download queuing system
+
+## Development Commands
+
+- `npm run watch`: Start development mode with auto-reload
+- `npm run dev`: Build for development
+- `npm run build`: Build for production
+- `npm run test`: Run tests (coming soon)
 
 ## Contributing
 
 Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
 
+### Development Guidelines
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Acknowledgments
+
+- Thanks to all contributors
+- Inspired by various media download extensions
+- Built with modern web technologies
+
+## Support
+
+If you encounter any issues or have questions, please:
+
+1. Check the [Issues](issues) page
+2. Create a new issue if your problem isn't already listed
+3. Provide as much detail as possible about your problem

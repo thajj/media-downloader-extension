@@ -1,42 +1,36 @@
 {
-  "manifest_version": 3,  // Use manifest version 3
-  "name": "WebM Downloader",
-  "description": "Download webm videos from web pages.",
+  "manifest_version": 3,
+  "name": "Media Downloader",
   "version": "1.0",
+  "description": "Download media files from web pages",
   "permissions": [
-   "scripting",
-    "sidePanel",
-    "storage",
-    "offscreen",
-    "debugger",
-    "tabs",
     "activeTab",
-    "downloads"
-
+    "downloads",
+    "storage",
+    "tabs"
   ],
-  "background": {
-    "service_worker": "background.js" 
-  },
+  "host_permissions": [
+    "<all_urls>"
+  ],
   "content_scripts": [
     {
-      "matches": ["<all_urls>"], // Run the script on all web pages
-      "js": ["content.js"],
-       "run_at": "document_end" // Add this line
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "content.js"
+      ]
     }
   ],
-  // "action": { 
-  //   "default_popup": "popup.html",  // Optional: If you want a browser action popup
-  //   "default_icon": { 
-  //     "16": "icon16.png",
-  //     "32": "icon32.png",
-  //     "48": "icon48.png",
-  //     "128": "icon128.png"
-  //   }
-  // },
-  "icons": {
-    "16": "icons/16.png",
-    "32": "icons/32.png",
-    "48": "icons/48.png",
-    "128": "icons/128.png"
-  } 
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/16.png",
+      "48": "icons/48.png",
+      "128": "icons/128.png"
+    }
+  }
 }
