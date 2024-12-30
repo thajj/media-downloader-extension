@@ -47,6 +47,9 @@ import { debounce } from "./utils";
       sendResponse({ success: true });
     } else if (request.action === "downloadProgress" && sidePanel) {
       sidePanel.updateDownloadProgress(request.url, request.progress);
+    } else if (request.action === "settingsUpdated" && sidePanel) {
+      sidePanel.handleSettingsUpdate(request.settings);
+      sendResponse({ success: true });
     }
     return true;
   });

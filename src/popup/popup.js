@@ -5,6 +5,7 @@ const DEFAULT_SETTINGS = {
   downloadPath: "",
   groupByType: true,
   showNotifications: true,
+  maxConcurrentDownloads: 1,
 };
 
 async function initializePopup() {
@@ -19,6 +20,13 @@ async function initializePopup() {
   document.getElementById("groupByType").checked = settings.groupByType;
   document.getElementById("showNotifications").checked =
     settings.showNotifications;
+  document.getElementById("maxConcurrentDownloads").value =
+    settings.maxConcurrentDownloads;
+
+  // Add event listener for save button
+  document
+    .getElementById("saveSettings")
+    .addEventListener("click", saveSettings);
 }
 
 document.addEventListener("DOMContentLoaded", initializePopup);
@@ -30,6 +38,10 @@ async function saveSettings() {
     downloadPath: document.getElementById("downloadPath").value,
     groupByType: document.getElementById("groupByType").checked,
     showNotifications: document.getElementById("showNotifications").checked,
+    maxConcurrentDownloads: parseInt(
+      document.getElementById("maxConcurrentDownloads").value,
+      10
+    ),
   };
 
   try {

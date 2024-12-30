@@ -4,6 +4,11 @@ export class SidePanel {
     this.imageUrls = mediaUrls.imageUrls;
     this.panel = null;
     this.downloadStates = new Map();
+    this.activeTab = "videos";
+    this.downloadQueue = [];
+    this.activeDownloads = new Set();
+    this.maxConcurrentDownloads = 1;
+    this.isProcessingQueue = false;
   }
 
   async loadSettings() {
@@ -11,6 +16,7 @@ export class SidePanel {
       panelPosition: "right",
       groupByType: true,
       showNotifications: true,
+      maxConcurrentDownloads: 1,
     });
 
     if (settings.panelPosition === "left") {
@@ -20,6 +26,7 @@ export class SidePanel {
 
     this.groupByType = settings.groupByType;
     this.showNotifications = settings.showNotifications;
+    this.maxConcurrentDownloads = settings.maxConcurrentDownloads;
   }
 
   async create() {
@@ -112,7 +119,26 @@ export class SidePanel {
       font-size: 14px;
     `;
     downloadAllButton.onclick = () => this.downloadAll();
-    this.panel.appendChild(downloadAllButton);
+
+    const queueInfo = document.createElement("div");
+    queueInfo.style.cssText = `
+      font-size: 11px;
+      color: #666;
+      text-align: center;
+      margin-top: 5px;
+    `;
+    this.queueInfoElement = queueInfo;
+    this.updateQueueInfo();
+
+    const headerControls = document.createElement("div");
+    headerControls.style.cssText = `
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    `;
+    headerControls.appendChild(downloadAllButton);
+    headerControls.appendChild(queueInfo);
+    this.panel.appendChild(headerControls);
   }
 
   createTabsContainer() {
@@ -144,7 +170,17 @@ export class SidePanel {
       font-size: 14px;
     `;
 
-    tab.onclick = () => this.switchTab(text.toLowerCase());
+    tab.onclick = () => {
+      this.activeTab = text.toLowerCase();
+      this.switchTab(text.toLowerCase());
+
+      const tabsContainer = tab.parentElement;
+      if (tabsContainer) {
+        Array.from(tabsContainer.children).forEach((t) => {
+          t.style.backgroundColor = t === tab ? "#f0f0f0" : "#fff";
+        });
+      }
+    };
     return tab;
   }
 
@@ -265,21 +301,50 @@ export class SidePanel {
     }
   }
 
+  async processQueue() {
+    if (this.isProcessingQueue) return;
+    this.isProcessingQueue = true;
+    this.updateQueueInfo();
+
+    while (this.downloadQueue.length > 0) {
+      if (this.activeDownloads.size >= this.maxConcurrentDownloads) {
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        continue;
+      }
+
+      const nextDownload = this.downloadQueue.shift();
+      this.activeDownloads.add(nextDownload.url);
+      this.updateQueueInfo();
+
+      const state = this.downloadStates.get(nextDownload.url);
+      if (state) {
+        state.progressBar.style.display = "block";
+        state.status.textContent = "Starting...";
+        state.container.style.backgroundColor = "#f0f0f0";
+      }
+
+      chrome.runtime.sendMessage({
+        action:
+          nextDownload.type === "video" ? "downloadVideo" : "downloadImage",
+        downloadInfo: {
+          url: nextDownload.url,
+          filename: nextDownload.filename,
+        },
+      });
+    }
+
+    this.isProcessingQueue = false;
+    this.updateQueueInfo();
+  }
+
+  addToQueue(item, type) {
+    this.downloadQueue.push({ ...item, type });
+    this.updateQueueInfo();
+    this.processQueue();
+  }
+
   downloadItem(item, type) {
-    const state = this.downloadStates.get(item.url);
-    if (!state) return;
-
-    state.progressBar.style.display = "block";
-    state.status.textContent = "Starting...";
-    state.container.style.backgroundColor = "#f0f0f0";
-
-    chrome.runtime.sendMessage({
-      action: type === "video" ? "downloadVideo" : "downloadImage",
-      downloadInfo: {
-        url: item.url,
-        filename: item.filename,
-      },
-    });
+    this.addToQueue(item, type);
   }
 
   updateDownloadProgress(url, progress) {
@@ -296,34 +361,42 @@ export class SidePanel {
       state.progressFill.style.width = "100%";
       state.status.textContent = "Complete";
       state.container.style.backgroundColor = "#e8f5e9";
+      this.activeDownloads.delete(url);
+      this.updateQueueInfo();
+      this.processQueue();
     } else if (progress.state === "error") {
       state.status.textContent = "Error";
       state.container.style.backgroundColor = "#ffebee";
+      this.activeDownloads.delete(url);
+      this.updateQueueInfo();
+      this.processQueue();
     }
   }
 
   downloadAll() {
-    const downloads = {
-      videos: this.videoUrls.map((item) => ({
-        url: item.url,
-        filename: item.filename,
-      })),
-      images: this.imageUrls.map((item) => ({
-        url: item.url,
-        filename: item.filename,
-      })),
-    };
-
-    chrome.runtime.sendMessage(
-      {
-        action: "downloadAll",
-        downloads: downloads,
-      },
-      (response) => {
-        if (chrome.runtime.lastError) {
-          console.error("Download all error:", chrome.runtime.lastError);
-        }
-      }
+    const items = this.activeTab === "videos" ? this.videoUrls : this.imageUrls;
+    items.forEach((item) =>
+      this.addToQueue(item, this.activeTab === "videos" ? "video" : "image")
     );
+  }
+
+  updateQueueInfo() {
+    if (this.queueInfoElement) {
+      this.queueInfoElement.textContent = `Queue: ${this.downloadQueue.length} | Active: ${this.activeDownloads.size}/${this.maxConcurrentDownloads}`;
+    }
+  }
+
+  handleSettingsUpdate(settings) {
+    if (settings.maxConcurrentDownloads !== undefined) {
+      this.maxConcurrentDownloads = settings.maxConcurrentDownloads;
+      this.updateQueueInfo();
+    }
+    if (settings.panelPosition === "left") {
+      this.panel.style.left = "25px";
+      this.panel.style.right = "auto";
+    } else {
+      this.panel.style.left = "auto";
+      this.panel.style.right = "25px";
+    }
   }
 }
