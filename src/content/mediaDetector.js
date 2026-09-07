@@ -111,16 +111,17 @@ export class MediaDetector {
 
   cleanUrl(url) {
     if (!url) return "";
-    return url.split("?")[0].split("#")[0];
+    return url.split("#")[0];
   }
 
   extractFilename(url) {
     if (!url) return "";
-    return url.substring(url.lastIndexOf("/") + 1);
+    const path = url.split(/[?#]/)[0];
+    return path.substring(path.lastIndexOf("/") + 1);
   }
 
   isValidImageUrl(url) {
-    return /\.(jpg|jpeg|png|gif)$/i.test(url);
+    return /\.(jpg|jpeg|png|gif)$/i.test(url.split(/[?#]/)[0]);
   }
 
   isDuplicate(array, url) {

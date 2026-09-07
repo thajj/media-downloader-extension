@@ -1,17 +1,35 @@
+# Media Downloader for Chrome
+
+Find direct image and video links on a webpage and download them individually or in a queue from an on-page panel.
+
 
 ## Installation
 
-### For Development
+### Build and load locally
 
-1. Run `npm run build` to create the `dist` folder
-2. Open Chrome and go to `chrome://extensions/`
-3. Enable "Developer mode" in the top right
-4. Click "Load unpacked" and select the `dist` directory
+You need Git, Node.js, npm, and Chrome.
 
-### For Users
+```sh
+git clone https://github.com/thajj/media-downloader-extension.git
+cd media-downloader-extension
+npm ci
+npm run build
+```
 
-1. Download the latest release from the Chrome Web Store (coming soon)
-2. Or download the latest build from the releases page
+1. Open `chrome://extensions/` in Chrome.
+2. Enable **Developer mode**.
+3. Click **Load unpacked** and select the generated `dist` directory.
+4. Open or refresh a webpage containing supported media.
+
+There are currently no packaged GitHub releases. Use the source build above.
+
+### Supported media and limitations
+
+- Direct links ending in `.mp4` or `.webm`.
+- Direct links ending in `.jpg`, `.jpeg`, `.png`, or `.gif`.
+- Supported image URLs from image elements, `srcset`, and lazy-loading `data-src` / `data-srcset` attributes.
+
+Detection does not cover every embedded player or streaming format. Detected image URLs preserve query parameters used for signatures and transformations. Media added after the panel first opens may require a page refresh to appear.
 
 ## Usage
 
@@ -39,10 +57,10 @@
 
 ## Development Commands
 
-- `npm run watch`: Start development mode with auto-reload
+- `npm run watch`: Rebuild on source changes; reload the extension in Chrome and refresh the webpage manually
 - `npm run dev`: Build for development
 - `npm run build`: Build for production
-- `npm run test`: Run tests (coming soon)
+- `npm run test`: Run image URL regression tests (Node.js 18 or newer)
 
 ## Contributing
 
@@ -70,6 +88,12 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 If you encounter any issues or have questions, please:
 
-1. Check the [Issues](issues) page
+1. Check the [Issues](https://github.com/thajj/media-downloader-extension/issues) page
 2. Create a new issue if your problem isn't already listed
 3. Provide as much detail as possible about your problem
+
+## Permissions
+
+The manifest requests `activeTab`, `downloads`, `storage`, `tabs`, and access to all URLs. A content script detects media on matching webpages, and Chrome’s downloads API saves files.
+
+Built by [Toufic Hajj](https://github.com/thajj). Follow my GitHub profile for updates to this and other practical tools.
