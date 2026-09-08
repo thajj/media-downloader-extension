@@ -7,7 +7,7 @@
     "lib": "lib"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "node --test test/*.test.mjs",
     "clean": "rm -rf dist && rm -rf build && rm -rf node_modules",
     "build": "webpack --config webpack.config.js",
     "watch": "webpack --watch --config webpack.config.js",
